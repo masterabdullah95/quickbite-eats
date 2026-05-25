@@ -1,15 +1,15 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShoppingBag, UtensilsCrossed, LogOut, User as UserIcon } from "lucide-react";
+import { ShoppingBag, UtensilsCrossed, LogOut, User as UserIcon, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "@/store/cart";
-import { useAuth } from "@/hooks/use-auth";
+import { useIsAdmin } from "@/hooks/use-admin";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function Navbar() {
   const count = useCart((s) => s.count());
   const open = useCart((s) => s.open);
-  const { user } = useAuth();
+  const { user, isAdmin } = useIsAdmin();
   const navigate = useNavigate();
 
   const firstName =
@@ -38,6 +38,7 @@ export function Navbar() {
           <Link to="/menu" activeProps={{ className: "text-primary" }} className="hover:text-primary transition-colors">Menu</Link>
           <Link to="/about" activeProps={{ className: "text-primary" }} className="hover:text-primary transition-colors">About</Link>
           {user && <Link to="/orders" activeProps={{ className: "text-primary" }} className="hover:text-primary transition-colors">My Orders</Link>}
+          {isAdmin && <Link to="/admin" className="hover:text-primary transition-colors inline-flex items-center gap-1"><Shield className="h-4 w-4" />Admin</Link>}
         </nav>
 
         <div className="flex items-center gap-2">
