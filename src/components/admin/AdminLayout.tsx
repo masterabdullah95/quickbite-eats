@@ -9,13 +9,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
-const NAV = [
+type NavItem = { to: "/admin" | "/admin/orders" | "/admin/menu" | "/admin/customers" | "/admin/analytics"; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+const NAV: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { to: "/admin/menu", label: "Menu", icon: UtensilsCrossed },
   { to: "/admin/customers", label: "Customers", icon: Users },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-] as const;
+];
 
 export function AdminLayout() {
   const { user } = useAuth();

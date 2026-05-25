@@ -69,7 +69,8 @@ function OverviewPage() {
       const k = d.toISOString().slice(0, 10);
       buckets[k] = 0;
     }
-    (last7.data ?? []).forEach((r: { created_at: string }) => {
+    (last7.data ?? []).forEach((r) => {
+      if (!r.created_at) return;
       const k = r.created_at.slice(0, 10);
       if (k in buckets) buckets[k]++;
     });

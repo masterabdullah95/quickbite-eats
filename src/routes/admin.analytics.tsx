@@ -34,7 +34,8 @@ function AnalyticsPage() {
         const d = new Date(); d.setDate(d.getDate() - i);
         buckets[d.toISOString().slice(0, 10)] = 0;
       }
-      (ordersRes.data ?? []).forEach((o: { created_at: string; total_amount: number }) => {
+      (ordersRes.data ?? []).forEach((o) => {
+        if (!o.created_at) return;
         const k = o.created_at.slice(0, 10);
         if (k in buckets) buckets[k] += Number(o.total_amount);
       });
@@ -46,7 +47,7 @@ function AnalyticsPage() {
       // Peak hours
       const hours = Array(24).fill(0);
       const allOrders = (await supabase.from("orders").select("created_at")).data ?? [];
-      allOrders.forEach((o: { created_at: string }) => { hours[new Date(o.created_at).getHours()]++; });
+      allOrders.forEach((o) => { if (o.created_at) hours[new Date(o.created_at).getHours()]++; });
       setHeatmap(hours);
 
       // Top items
