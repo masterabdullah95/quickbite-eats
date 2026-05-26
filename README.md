@@ -1,11 +1,12 @@
 # QuickBite
 
-A modern, full-stack food ordering web application built with **React**, **TypeScript**, **Tailwind CSS**, and **Lovable Cloud** (powered by Supabase). Browse a curated menu, add items to your cart, and place orders for delivery — all with real-time data, smooth animations, and a fully responsive design.
+A modern, full-stack food ordering web application built with **React**, **TypeScript**, **Tailwind CSS**, and **Lovable Cloud** (powered by Supabase). Browse a curated menu, add items to your cart, and place orders for delivery — all with real-time data, smooth animations, and a fully responsive design. Includes a secure **Admin Dashboard** for managing orders, menu items, customers, and analytics.
 
 ---
 
 ## ✨ Features
 
+### Customer-Facing
 - **Browse Menu** — Explore dishes across categories: Burgers, Pizza, Pasta, Drinks, and Desserts.
 - **Item Detail Modal** — Tap any dish to view details, adjust quantity, and add to cart.
 - **Shopping Cart** — Slide-out cart drawer with quantity controls and live subtotal.
@@ -16,6 +17,15 @@ A modern, full-stack food ordering web application built with **React**, **TypeS
 - **Responsive Design** — Fully mobile-first, card-based layout that works beautifully on all devices.
 - **Smooth Animations** — Framer Motion powered page transitions, modals, and cart interactions.
 - **Toast Notifications** — Real-time feedback for cart actions and order placement via Sonner.
+
+### Admin Dashboard (`/admin`)
+- **Role-Based Access Control** — Only users with `admin` role in the `user_roles` table can access the admin panel.
+- **Dashboard Overview** — Live KPI cards (orders today, revenue today, pending orders, menu items, customers) plus a 7-day order volume bar chart.
+- **Order Management** — Full order list with search, status filtering, pagination, inline status updates, and detailed order modals.
+- **Menu Management** — Full CRUD for menu items (create, edit, delete, toggle availability).
+- **Customer Management** — Searchable customer list with individual order history detail views.
+- **Analytics** — Revenue trends (30-day line chart), top-selling items (bar chart), category distribution (pie chart), and peak ordering hours heatmap.
+- **Real-time Updates** — Orders appear instantly in the dashboard via Supabase Realtime subscriptions.
 
 ---
 
@@ -28,8 +38,9 @@ A modern, full-stack food ordering web application built with **React**, **TypeS
 | **Styling** | Tailwind CSS v4 with custom design tokens |
 | **UI Components** | shadcn/ui (Radix UI primitives + custom variants) |
 | **Animations** | Framer Motion |
+| **Charts** | Recharts |
 | **State Management** | Zustand (cart store) |
-| **Backend / Database** | Lovable Cloud (PostgreSQL + Auth + Row Level Security) |
+| **Backend / Database** | Lovable Cloud (PostgreSQL + Auth + Row Level Security + Realtime) |
 | **Icons** | Lucide React |
 | **Build Tool** | Vite 7 |
 | **Runtime** | Cloudflare Workers (edge) |
@@ -49,6 +60,7 @@ QuickBite uses a warm, appetizing color palette defined in `src/styles.css`:
 | **Muted** | `#F5F0EB` | Secondary backgrounds |
 | **Accent** | `#FFE8D6` | Highlights, tags, badges |
 | **Border** | `#E8E0D8` | Dividers, input borders |
+| **Admin Sidebar** | `#0F172A` (Slate 900) | Admin panel dark sidebar |
 
 - **Font**: Poppins (display/headings) + Inter (body)
 - **Border Radius**: 0.75rem base, rounded cards and buttons
@@ -61,40 +73,49 @@ QuickBite uses a warm, appetizing color palette defined in `src/styles.css`:
 
 ```
 ├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── FoodCard.tsx     # Menu item card with add-to-cart
-│   │   ├── CartDrawer.tsx   # Slide-out shopping cart
-│   │   ├── Navbar.tsx       # Top navigation with auth state
-│   │   ├── Footer.tsx       # Site footer
-│   │   └── ui/              # shadcn/ui primitives (button, dialog, sheet, etc.)
+│   ├── components/              # Reusable UI components
+│   │   ├── FoodCard.tsx         # Menu item card with add-to-cart
+│   │   ├── CartDrawer.tsx       # Slide-out shopping cart
+│   │   ├── Navbar.tsx           # Top navigation with auth state
+│   │   ├── Footer.tsx           # Site footer
+│   │   ├── admin/
+│   │   │   └── AdminLayout.tsx  # Admin sidebar + header + mobile drawer
+│   │   └── ui/                  # shadcn/ui primitives (button, dialog, sheet, etc.)
 │   ├── hooks/
-│   │   └── use-auth.ts      # Auth session hook (Supabase)
+│   │   ├── use-auth.ts          # Auth session hook (Supabase)
+│   │   └── use-admin.ts         # Admin role checker hook
 │   ├── integrations/
-│   │   ├── lovable/         # Lovable Cloud Auth (OAuth broker)
-│   │   └── supabase/        # Supabase clients (browser, server, middleware)
-│   ├── routes/              # TanStack file-based routes
-│   │   ├── __root.tsx       # Root layout (Navbar + Footer + Outlet)
-│   │   ├── index.tsx        # Homepage (hero + popular items)
-│   │   ├── menu.tsx         # Full menu with category filters
-│   │   ├── checkout.tsx     # Checkout page (delivery + payment)
-│   │   ├── orders.tsx       # Order history for logged-in users
+│   │   ├── lovable/             # Lovable Cloud Auth (OAuth broker)
+│   │   └── supabase/            # Supabase clients (browser, server, middleware)
+│   ├── routes/                  # TanStack file-based routes
+│   │   ├── __root.tsx           # Root layout (Navbar + Footer + Outlet)
+│   │   ├── index.tsx            # Homepage (hero + popular items)
+│   │   ├── menu.tsx             # Full menu with category filters
+│   │   ├── checkout.tsx         # Checkout page (delivery + payment)
+│   │   ├── orders.tsx           # Order history for logged-in users
 │   │   ├── order-confirmation.tsx  # Post-order success page
-│   │   ├── login.tsx        # Sign-in (email + Google OAuth)
-│   │   ├── signup.tsx       # Sign-up (email)
-│   │   └── about.tsx        # About / contact page
-│   ├── server.ts            # Server entry point
-│   ├── start.ts             # Start instance configuration
-│   ├── router.tsx           # Router setup
+│   │   ├── login.tsx            # Sign-in (email + Google OAuth)
+│   │   ├── signup.tsx           # Sign-up (email)
+│   │   ├── about.tsx            # About / contact page
+│   │   ├── admin.tsx            # Admin route guard (redirects non-admins)
+│   │   ├── admin.index.tsx      # Admin dashboard overview
+│   │   ├── admin.orders.tsx     # Admin order management
+│   │   ├── admin.menu.tsx       # Admin menu CRUD
+│   │   ├── admin.customers.tsx  # Admin customer list + history
+│   │   └── admin.analytics.tsx  # Admin analytics charts
+│   ├── server.ts                # Server entry point
+│   ├── start.ts                 # Start instance configuration
+│   ├── router.tsx               # Router setup
 │   ├── store/
-│   │   └── cart.ts          # Zustand cart store (items, qty, open/close)
-│   └── styles.css           # Global styles + Tailwind theme tokens
+│   │   └── cart.ts              # Zustand cart store (items, qty, open/close)
+│   └── styles.css               # Global styles + Tailwind theme tokens
 ├── supabase/
-│   ├── config.toml          # Supabase CLI config
-│   └── migrations/          # Database migrations (tables, RLS, seed data)
+│   ├── config.toml              # Supabase CLI config
+│   └── migrations/              # Database migrations (tables, RLS, seed data, roles)
 ├── package.json
 ├── vite.config.ts
 ├── tsconfig.json
-└── wrangler.jsonc           # Cloudflare Workers config
+└── wrangler.jsonc               # Cloudflare Workers config
 ```
 
 ---
@@ -114,6 +135,15 @@ Stores extended user info linked to Supabase Auth.
 | `phone` | TEXT | Contact number |
 | `address` | TEXT | Default delivery address |
 | `created_at` | TIMESTAMPTZ | Auto-generated |
+
+### `user_roles`
+Role-based access control. One row per role assignment.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | UUID | Auto-generated |
+| `user_id` | UUID | FK → `auth.users` |
+| `role` | app_role | `admin` or `customer` |
 
 ### `menu_items`
 The food menu catalog.
@@ -137,7 +167,7 @@ Customer orders.
 |--------|------|-------|
 | `id` | UUID | Auto-generated |
 | `user_id` | UUID | FK → `auth.users` |
-| `status` | TEXT | Pending / Preparing / Out for Delivery / Delivered |
+| `status` | TEXT | Pending / Preparing / Out for Delivery / Delivered / Cancelled |
 | `total_amount` | NUMERIC | Order total including delivery |
 | `delivery_address` | TEXT | Delivery location |
 | `phone` | TEXT | Contact number |
@@ -157,10 +187,11 @@ Line items for each order.
 | `name` | TEXT | Item name (snapshot) |
 
 ### Row Level Security (RLS)
-- **Menu items**: Public read for all visitors.
-- **Profiles**: Users can only read/insert/update their own profile.
-- **Orders**: Users can only read/insert their own orders.
-- **Order items**: Users can only access items belonging to their own orders.
+- **Menu items**: Public read for all visitors. Admins can create, update, and delete.
+- **Profiles**: Users can only read/insert/update their own profile. Admins can read all.
+- **Orders**: Users can only read/insert their own orders. Admins can read and update all.
+- **Order items**: Users can only access items belonging to their own orders. Admins can read all.
+- **User roles**: Managed via a security-definer `has_role()` function to prevent recursive RLS checks.
 
 ---
 
@@ -232,6 +263,33 @@ Delivery fee is fixed at **$2.99**.
 
 ---
 
+## 🛡️ Admin Dashboard
+
+The admin panel lives at `/admin` and is completely separate from the customer-facing app.
+
+### Granting Admin Access
+
+To make a user an admin, insert a row into the `user_roles` table:
+
+```sql
+INSERT INTO public.user_roles (user_id, role)
+VALUES ('<USER_UUID>', 'admin');
+```
+
+Only users with `role = 'admin'` can access `/admin` and its sub-routes. Non-admins are redirected to the home page.
+
+### Admin Pages
+
+| Route | Description |
+|-------|-------------|
+| `/admin` | Dashboard overview with live stats and 7-day order chart |
+| `/admin/orders` | Search, filter, paginate, and update order statuses |
+| `/admin/menu` | Full CRUD for menu items (add, edit, delete, toggle availability) |
+| `/admin/customers` | Customer directory with order history detail modal |
+| `/admin/analytics` | Revenue trends, top-selling items, category breakdown, peak hours |
+
+---
+
 ## 📝 Scripts
 
 | Command | Description |
@@ -253,6 +311,7 @@ Delivery fee is fixed at **$2.99**.
 - **TanStack Query** — Server state management
 - **Tailwind CSS v4** — Utility-first styling
 - **Framer Motion** — Declarative animations
+- **Recharts** — Data visualization for admin analytics
 - **Zustand** — Lightweight state management
 - **Supabase JS Client** — Database & auth SDK
 - **Zod** — Schema validation
