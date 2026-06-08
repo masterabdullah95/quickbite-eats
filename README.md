@@ -2,12 +2,10 @@
 
 A modern, full-stack food ordering web application built with **React**, **TypeScript**, **Tailwind CSS**, and **Lovable Cloud** (powered by Supabase). Browse a curated menu, add items to your cart, and place orders for delivery — all with real-time data, smooth animations, and a fully responsive design. Includes a secure **Admin Dashboard** for managing orders, menu items, customers, and analytics.
 
-** Frontend: ** https://quickbiteeats.lovable.app
+Frontend: https://quickbiteeats.lovable.app
 
 
-** Admin Panel: ** 
-
-https://quickbiteeats.lovable.app/admin
+Admin Panel: https://quickbiteeats.lovable.app/admin
 
 Username: experthamza95@gmail.com
 
